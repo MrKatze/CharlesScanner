@@ -1,0 +1,1 @@
+#Escanneo realizao a partir de una imagen dada
