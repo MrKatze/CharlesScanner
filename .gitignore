@@ -1,0 +1,47 @@
+# Ignorar entornos virtuales
+venv/
+ENV/
+env/
+.venv/
+
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos temporales o de pruebas
+*.log
+*.tmp
+*.swp
+*.bak
+*.orig
+
+# Archivos de configuración del sistema operativo o editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Archivos compilados
+*.so
+*.dll
+*.exe
+*.out
+*.a
+
+# Archivos de Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Base de datos SQLite local (si la usas)
+*.sqlite3
+*.db
+
+# Archivos de configuración de pytest
+.cache/
+
+# Archivos de configuración de cobertura de código
+.coverage
+htmlcov/
+coverage.xml
+
+# Distribución de paquetes
