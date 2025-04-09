@@ -1,39 +1,47 @@
 #Scanner de Camara
 import cv2
+import numpy as np
 
-# Inicializa la cámara
-cap = cv2.VideoCapture(0) #Camara Laptop
-# cap = cv2.VideoCapture(2) #Camara WebCam
+from app import utils
+class cameraScanner: 
+    def __init__(self,indexcamera=0):
+        # Inicializa la cámara
+        self.cap = cv2.VideoCapture(indexcamera) #Camara Laptop
+        #Verifica si se abrió bien
+        if not self.cap.isOpened():
+            print("No se pudo abrir la cámara.")
+            exit()
+        pass
 
-# Verifica si se abrió bien
-if not cap.isOpened():
-    print("No se pudo abrir la cámara.")
-    exit()
+    def scan(self):
+        print("Presiona 'q' para salir")
 
-print("Presiona 'q' para salir")
+        while True:
+            try:
+                ret, frame = self.cap.read()
+                if not ret:
+                    print("No se pudo recibir el frame. Saliendo...")
+                    break
+                dst = utils.processImage(frame,showcanny=True)
+                cv2.imshow('Camara sin efectos', frame)
+                if not isinstance(dst, np.ndarray):
+                    cv2.imshow('Camara con documento recortado', frame)
+                else:
+                    cv2.imshow('Camara con documento recortado', dst)
+                    
+                # cv2.imshow('Camara con efecto espejo', mirrored_frame)
+                # cv2.imshow('Camara con contornos', cnts)
 
-while True:
-    ret, frame = cap.read()
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    self.close
+                    break
+            except Exception as e:
+                print("ha ocurrido un error:",e)
+                # self.close()
+                break
 
-    if not ret:
-        print("No se pudo recibir el frame. Saliendo...")
-        break
+    def close(self):
 
-    # Efecto espejo
-    mirrored_frame = cv2.flip(frame, 1)
-
-    # Redimensionar a 1920x1080
-    #resized_frame = cv2.resize(mirrored_frame, (1920,1080))
-
-    # Redimensionar a 1080x720
-    resized_frame = cv2.resize(mirrored_frame, (1080,720))
-
-    # Mostrar en pantalla
-    cv2.imshow('Camara con efecto espejo (1920x1080)', resized_frame)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# Libera recursos
-cap.release()
-cv2.destroyAllWindows()
+        # Libera recursos
+        self.cap.release()
+        cv2.destroyAllWindows()
