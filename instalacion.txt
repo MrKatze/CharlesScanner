@@ -1,5 +1,0 @@
-Primeramente Instalamos Anaconda
-
-
-conda install -c conda-forge reportlab opencv scikit-image tesseract pillow
-pip install pytesseract img2pdf fpdf PyQt5
