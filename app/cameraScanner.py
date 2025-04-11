@@ -7,39 +7,40 @@ class cameraScanner:
     def __init__(self,indexcamera=0):
         # Inicializa la cámara
         self.cap = cv2.VideoCapture(indexcamera) #Camara Laptop
+        # Establecer resolución deseada
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+        self.resolutionOutput =  utils.resolutionOutput 
         #Verifica si se abrió bien
         if not self.cap.isOpened():
             print("No se pudo abrir la cámara.")
             exit()
         pass
 
-    def scan(self):
-        print("Presiona 'q' para salir")
+    def scan(self,show=False):
+        try:
+            ret, frame = self.cap.read()
+            if not ret:
+                print("No se pudo recibir el frame. Saliendo...")
+                
+            
+            dst = utils.processImage(frame,100,200,self.resolutionOutput,showcanny=show)
+            if show:
 
-        while True:
-            try:
-                ret, frame = self.cap.read()
-                if not ret:
-                    print("No se pudo recibir el frame. Saliendo...")
-                    break
-                dst = utils.processImage(frame,showcanny=True)
                 cv2.imshow('Camara sin efectos', frame)
                 if not isinstance(dst, np.ndarray):
                     cv2.imshow('Camara con documento recortado', frame)
                 else:
                     cv2.imshow('Camara con documento recortado', dst)
                     
-                # cv2.imshow('Camara con efecto espejo', mirrored_frame)
-                # cv2.imshow('Camara con contornos', cnts)
+            # cv2.imshow('Camara con efecto espejo', mirrored_frame)
+            # cv2.imshow('Camara con contornos', cnts)
+            return frame,dst
+        except Exception as e:
+            print("ha ocurrido un error:",e)
+            # self.close()
 
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    self.close
-                    break
-            except Exception as e:
-                print("ha ocurrido un error:",e)
-                # self.close()
-                break
-
+    
     def close(self):
 
         # Libera recursos
