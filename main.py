@@ -1,13 +1,11 @@
-import cv2
-from app import imageScanner
-from app import cameraScanner
+import sys
+import os
+from PyQt5.QtWidgets import QApplication
+from ventanas.ventanaPrincipal import VentanaPrincipal
 
-#CAMARA
-# sc = cameraScanner.cameraScanner()
-# sc.scan()
-
-#IMAGEN
-# # scannerImagen = imageScanner.imageScanner('assets/test.jpeg') 
-# # scannerImagen = imageScanner.imageScanner('assets/test2.png') 
-scannerImagen = imageScanner.imageScanner('assets/test3.jpeg') 
-scannerImagen.scan()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    # Lanza la ventana principal
+    ventana = VentanaPrincipal()
+    ventana.show()
+    sys.exit(app.exec_())

@@ -2,7 +2,8 @@
 import cv2
 import numpy as np
 
-from app import utils
+#from app import utils
+import utils
 class cameraScanner: 
     def __init__(self,indexcamera=0):
         # Inicializa la cámara
