@@ -49,4 +49,4 @@ def processImage(image, th1, th2, ro, showcanny=False):
             matrix = cv2.getPerspectiveTransform(pts1, pts2)
             return cv2.warpPerspective(gray, matrix, (width, height))
         return 0
-        
+

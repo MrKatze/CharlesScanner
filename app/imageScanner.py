@@ -1,6 +1,7 @@
 #Escanneo realizao a partir de una imagen dada#Scanner de Camara
 import cv2
 import numpy as np
+#import utils
 import app.utils as utils
 
 class imageScanner:
@@ -22,11 +23,15 @@ class imageScanner:
         if show:
             cv2.imshow('Camara sin efectos', image)
             cv2.imshow('Escaneo', dst)
+        #cv2.imshow('Camara sin efectos', image)
+        #cv2.imshow('Escaneo', dst)
 
         # cv2.imshow('Camara con efecto espejo', mirrored_image)
         # cv2.imshow('Camara con contornos', cnts)
 
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+        #cv2.waitKey(0)
+        #cv2.destroyAllWindows()
         return image, dst
     
