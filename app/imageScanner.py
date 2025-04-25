@@ -1,7 +1,7 @@
-#Escanneo realizao a partir de una imagen dada#Scanner de Camara
+#Escanneo realizao a partir de una imagen dada
+#Scanner de Camara
 import cv2
 import numpy as np
-#import utils
 import app.utils as utils
 
 class imageScanner:
@@ -13,15 +13,17 @@ class imageScanner:
 
         
     def scan(self,show=False):
-        print("Presiona 'q' para salir")
         #Imagen Original
         image = cv2.imread(self.ruta)
         #Imagen Recortada
-        dst = utils.processImage(image,th1=10, th2=100, ro=self.ro , showcanny=False)
+        dst = utils.processImageCanny(image,th1=20, th2=100, ro=self.ro , showcanny=show)
         
         # Mostrar en pantalla
         if show:
+            print("Presiona 'q' para salir")
+            cv2.namedWindow("Camara sin efectos", cv2.WINDOW_NORMAL)
             cv2.imshow('Camara sin efectos', image)
+            cv2.namedWindow("Escaneo",cv2.WINDOW_NORMAL)
             cv2.imshow('Escaneo', dst)
         #cv2.imshow('Camara sin efectos', image)
         #cv2.imshow('Escaneo', dst)

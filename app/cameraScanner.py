@@ -25,7 +25,7 @@ class cameraScanner:
                 print("No se pudo recibir el frame. Saliendo...")
                 
             
-            dst = utils.processImage(frame,100,200,self.resolutionOutput,showcanny=show)
+            dst = utils.processImageCanny(frame,100,200,self.resolutionOutput,showcanny=show)
             if show:
 
                 cv2.imshow('Camara sin efectos', frame)

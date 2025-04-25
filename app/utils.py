@@ -18,19 +18,25 @@ def sortPoints(pts):
     # print("x2_order=",x2_order)
     return [x1_order[0], x1_order[1], x2_order[0], x2_order[1]]
 
-def processImage(image, th1, th2, ro, showcanny=False):   
+def processImageCanny(image, th1, th2, ro, showcanny=False):   
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    canny = cv2.Canny(gray, th1, th2)
+    desenfocada = cv2.GaussianBlur(gray, (5, 5), 0)
+    canny = cv2.Canny(desenfocada, th1, th2,L2gradient=True)
     canny =cv2.dilate(canny, None,iterations=1)
+
     #Mustra los bordes en blanco y negro
     if showcanny:
+        cv2.namedWindow("Canny", cv2.WINDOW_NORMAL)
         cv2.imshow('Canny', canny)
+        cv2.namedWindow("Desenfocada", cv2.WINDOW_NORMAL)
+        cv2.imshow('Desenfocada', desenfocada)
+
     cnts = cv2.findContours(canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
     cnts = sorted(cnts, key=cv2.contourArea, reverse=True)[:1]
 
     for c in cnts:
-        epsilon = 0.01 * cv2.arcLength(c, True)
+        epsilon = 0.1 * cv2.arcLength(c, True)
         approx = cv2.approxPolyDP(c, epsilon, True)
         if len(approx) == 4:
             cv2.drawContours(image, [approx], 0, (0, 255, 255), 2)
@@ -49,4 +55,3 @@ def processImage(image, th1, th2, ro, showcanny=False):
             matrix = cv2.getPerspectiveTransform(pts1, pts2)
             return cv2.warpPerspective(gray, matrix, (width, height))
         return 0
-
