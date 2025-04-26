@@ -66,6 +66,7 @@ class VentanaOpcionesArchivos(QDialog):
                 archivo_docx = os.path.join(direccion, self.nombre_archivo)
                 archivo_pdf = os.path.join(direccion, f"{os.path.splitext(self.nombre_archivo)[0]}.pdf")
                 
+                print(archivo_docx)
                 # Llamada a la función convertir_docx_a_pdf
                 convertir_docx_a_pdf(archivo_docx, archivo_pdf)
                 

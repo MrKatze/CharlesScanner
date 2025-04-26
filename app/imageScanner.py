@@ -17,7 +17,9 @@ class imageScanner:
         image = cv2.imread(self.ruta)
         #Imagen Recortada
         dst = utils.processImageCanny(image,th1=20, th2=100, ro=self.ro , showcanny=show)
-        
+        return image, dst
+    
+    '''  lo desactivo como no lo uso
         # Mostrar en pantalla
         if show:
             print("Presiona 'q' para salir")
@@ -35,5 +37,5 @@ class imageScanner:
         cv2.destroyAllWindows()
         #cv2.waitKey(0)
         #cv2.destroyAllWindows()
-        return image, dst
+        return image, dst'''
     
