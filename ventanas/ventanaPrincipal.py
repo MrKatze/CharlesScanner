@@ -67,6 +67,7 @@ class VentanaPrincipal(QMainWindow):
 
         layout_region.addWidget(self.lista_archivos)
 
+        self.buscar_archivos()
         return region_principal
 
     def abrir_opciones_archivo(self, item):
@@ -182,8 +183,9 @@ class VentanaPrincipal(QMainWindow):
         elif item.text() == "Escanear":
             self.cambiar_a_ventana_escaneo()  # Cambia a la ventana de escaneo
         elif item.text() == "Configuración":
-            tarjeta = VentanaConfiguracion()
-            tarjeta.exec_()
+            pass # Lo desabilito por que no hace nada aun
+         #  tarjeta = VentanaConfiguracion()
+           # tarjeta.exec_()
         elif item.text() == "Salir":
             self.close()
 

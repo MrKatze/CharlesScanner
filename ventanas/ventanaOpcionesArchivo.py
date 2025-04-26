@@ -26,10 +26,12 @@ class VentanaOpcionesArchivos(QDialog):
         self.setLayout(layout)
 
     def agregar_botones(self, layout):
-        opciones = ["Editar", "Subir a Drive Google", "Búsqueda Inteligente", "Exportación a PDF","Cerrar"]
+        opciones = ["Subir a Drive Google", "Búsqueda Inteligente", "Exportación a PDF","Cerrar"]
         for opcion in opciones:
             boton = QPushButton(opcion)
             self.aplicar_estilo_boton(boton)
+            if opcion in ["Subir a Drive Google", "Búsqueda Inteligente"]:  # Deshabilitar algunos botones
+                 boton.setEnabled(False)
             boton.clicked.connect(self.realizar_opcion)
             layout.addWidget(boton)
 
@@ -75,9 +77,10 @@ class VentanaOpcionesArchivos(QDialog):
              self.close() 
 
     def mousePressEvent(self, event: QMouseEvent):
-        # Cerrar si se hace clic fuera del diálogo
-        if event.button() == Qt.LeftButton and not self.rect().contains(event.pos()):
-            self.close()
+        if event.button() == Qt.LeftButton:
+            dialog_rect = self.geometry()
+            if not dialog_rect.contains(self.mapToGlobal(event.pos())):
+                self.close()
 
     def focusOutEvent(self, event: QEvent):
         # Cerrar cuando pierda el foco

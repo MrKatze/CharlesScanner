@@ -2,6 +2,9 @@ import easyocr
 import os
 from docx import Document
 from app.ExportacionPDF import convertir_docx_a_pdf
+import io
+import msoffcrypto
+
 def conversionformato(texto_extraido,name,ruta_guardado,indicador):
     # Crear un nuevo documento
     documento = Document()
@@ -15,7 +18,22 @@ def conversionformato(texto_extraido,name,ruta_guardado,indicador):
         for linea in lineas:
             documento.add_paragraph(linea)
     
-
+    # Guardar el documento en memoria
+    buffer = io.BytesIO()
+    documento.save(buffer)
+    buffer.seek(0)
+    
+    #if password is not None:
+        # Proceso de guardar con contraseña
+    #    with open(ruta_guardado, "wb") as archivo:
+     #       password = str(password)  # Asegúrate de que `password` sea un string
+     #      encrypted_document = msoffcrypto.OfficeFile(buffer)
+      #      if not isinstance(password, str):
+      #          raise TypeError("La contraseña debe ser un string")
+      #      encrypted_document.encrypt(archivo, password)
+     #       print(f"Archivo .docx protegido con contraseña creado exitosamente en: {ruta_guardado}")
+    #else:
+     #   print(ruta_guardado)
     # Guardar el documento como archivo .docx
     documento.save(ruta_guardado)
     print(f"Archivo .docx creado exitosamente en: {ruta_guardado}")
@@ -24,37 +42,36 @@ def conversionformato(texto_extraido,name,ruta_guardado,indicador):
         direccion = os.path.join(os.path.dirname(__file__), "..", "documentos")
         archivo_pdf = os.path.join(direccion, f"{os.path.splitext(name)[0]}.pdf")
         convertir_docx_a_pdf(ruta_guardado,archivo_pdf)
-        
-        if os.path.exists(ruta_guardado):
-            os.remove(ruta_guardado)
-            print(f"Archivo .docx eliminado: {ruta_guardado}")
-        else:
-            print("El archivo .docx no existe o ya fue eliminado.")
+        os.remove(ruta_guardado)
+        #if os.path.exists(ruta_guardado):
+         #   os.remove(ruta_guardado)
+         #   print(f"Archivo .docx eliminado: {ruta_guardado}")
+        #else:
+          #  print("El archivo .docx no existe o ya fue eliminado.")
 
-def extraccion(imagen,name,indicador):
+def extraccion(imagen,name):
     # Inicializa el lector
     lector = easyocr.Reader(['es'])  # 'es' para español
     # Lee texto de la imagen
     texto_extraido = lector.readtext(imagen, detail=0)
     # Muestra el texto extraído
     print("\n".join(texto_extraido))
-    
     # Construir la ruta relativa a la carpeta "documentos"
     ruta_base = os.path.dirname(__file__)  # Directorio del archivo actual
-    ruta_documentos = os.path.join(ruta_base, "..", "documentos")
-    
+    ruta_documentos = os.path.join(ruta_base, "..", "documentos")    
     # Especificar el archivo .txt donde se guardará el texto
    # ruta_guardado_txt = os.path.join(ruta_documentos, "texto_extraido.txt")
     ruta_guardado = os.path.join(ruta_documentos, f"{name}.docx")
-    
+    return texto_extraido, ruta_guardado
     # Guardar en un archivo
-    try:
+    #try:
         # Guardar como archivo .txt
   #      with open(ruta_guardado_txt, 'w', encoding='utf-8') as archivo:
      #       archivo.write("\n".join(texto_extraido))
       #  print(f"El archivo .txt se ha guardado correctamente en: {ruta_guardado_txt}")
         
         # Guardar como archivo .docx
-        conversionformato(texto_extraido,name,ruta_guardado,indicador)
-    except Exception as e:
-        print(f"Error al guardar el archivo: {e}")
+      #  return texto_extraido, ruta_guardado
+     #   conversionformato(texto_extraido,name,ruta_guardado,indicador)
+    #except Exception as e:
+     #   print(f"Error al guardar el archivo: {e}")
