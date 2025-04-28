@@ -2,6 +2,7 @@
 
 import cv2
 import numpy as np
+import math
 
 resolutionOutput =  [720,1080]
 
@@ -19,11 +20,39 @@ def sortPoints(pts):
     return [x1_order[0], x1_order[1], x2_order[0], x2_order[1]]
 
 def getResolutionOutput(pts):
-    p1,p2,p3,p4 = pts[0], pts[1], pts[2], pts[3]
-    # print("n_points=",n_points)
-    print("n_points=",pts)
-    print("n_points=",p1,p2,p3,p4)
-    return None
+    p1, p2, p3, p4 = pts[0], pts[1], pts[2], pts[3]
+    
+    # Calcular alturas de los lados izquierdo y derecho
+    l1 = abs(p3[1] - p1[1])
+    l2 = abs(p4[1] - p2[1])
+    altura = (l1 + l2) / 2
+
+    # Calcular anchos de los lados superior e inferior
+    a1 = abs(p2[0] - p1[0])
+    a2 = abs(p4[0] - p3[0])
+    ancho = (a1 + a2) / 2
+
+    # print(f"Ancho = {ancho}, Altura = {altura}")
+
+    if altura == 0 or ancho == 0:
+        print("Error: ancho o altura es cero")
+        return None
+
+    # Simplificar la relación
+    gcd = math.gcd(int(ancho), int(altura))
+    aspecto_ancho = int(ancho / gcd)
+    aspecto_alto = int(altura / gcd)
+
+    # print(f"Relación de aspecto detectada: {aspecto_ancho}:{aspecto_alto}")
+
+    # Calcular nueva resolución para altura fija de 720 px
+    altura_fija = 720
+    ancho_calculado = int((aspecto_ancho / aspecto_alto) * altura_fija)
+
+    # print(f"Resolución sugerida: {ancho_calculado}x{altura_fija}")
+
+    return [ancho_calculado, altura_fija]
+
 
 def processImageCanny(image, th1=20, th2=200, ro=resolutionOutput, showcanny=False):   
 
@@ -49,15 +78,13 @@ def processImageCanny(image, th1=20, th2=200, ro=resolutionOutput, showcanny=Fal
             cv2.drawContours(image, [approx], 0, (0, 255, 255), 2)
             # print("aprox=",approx)
             points = sortPoints(approx)
-            getResolutionOutput(points)
+            width, height =getResolutionOutput(points)
             # print("points=",points)
             cv2.circle(image, tuple(points[0]), 7, (255, 0, 0), 2)
             cv2.circle(image, tuple(points[1]), 7, (0, 255, 0), 2)
             cv2.circle(image, tuple(points[2]), 7, (0, 0, 255), 2)
             cv2.circle(image, tuple(points[3]), 7, (255, 255, 255), 2)
 
-            width = ro[0]
-            height = ro[1]  
             pts1 = np.float32(points)
             pts2 = np.float32([[0,0], [width,0],[0, height], [width, height]])
             matrix = cv2.getPerspectiveTransform(pts1, pts2)
