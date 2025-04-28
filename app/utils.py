@@ -18,7 +18,14 @@ def sortPoints(pts):
     # print("x2_order=",x2_order)
     return [x1_order[0], x1_order[1], x2_order[0], x2_order[1]]
 
-def processImageCanny(image, th1, th2, ro, showcanny=False):   
+def getResolutionOutput(pts):
+    p1,p2,p3,p4 = pts[0], pts[1], pts[2], pts[3]
+    # print("n_points=",n_points)
+    print("n_points=",pts)
+    print("n_points=",p1,p2,p3,p4)
+    return None
+
+def processImageCanny(image, th1=20, th2=200, ro=resolutionOutput, showcanny=False):   
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     desenfocada = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -42,6 +49,7 @@ def processImageCanny(image, th1, th2, ro, showcanny=False):
             cv2.drawContours(image, [approx], 0, (0, 255, 255), 2)
             # print("aprox=",approx)
             points = sortPoints(approx)
+            getResolutionOutput(points)
             # print("points=",points)
             cv2.circle(image, tuple(points[0]), 7, (255, 0, 0), 2)
             cv2.circle(image, tuple(points[1]), 7, (0, 255, 0), 2)
