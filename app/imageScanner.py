@@ -25,7 +25,7 @@ class imageScanner:
             print("Presiona 'q' para salir")
             cv2.namedWindow("Camara sin efectos", cv2.WINDOW_NORMAL)
             cv2.imshow('Camara sin efectos', image)
-            cv2.namedWindow("Escaneo",cv2.WINDOW_NORMAL)
+            # cv2.namedWindow("Escaneo",cv2.WINDOW_NORMAL)
             cv2.imshow('Escaneo', dst)
         #cv2.imshow('Camara sin efectos', image)
         #cv2.imshow('Escaneo', dst)
