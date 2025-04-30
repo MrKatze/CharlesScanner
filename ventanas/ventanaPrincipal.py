@@ -17,11 +17,57 @@ class VentanaPrincipal(QMainWindow):
         self.setWindowTitle("CScan")
         self.resize(800, 600)
         
-        ruta_logo = os.path.join(os.path.dirname(__file__), "..","assets","logo.png")
+        ruta_logo = os.path.join(os.path.dirname(__file__), "..","recursos/assets","logo.png")
       #  ruta_logo = os.path.abspath("../assets/logo.png")
         self.setWindowIcon(QIcon(ruta_logo))
         self.setStyleSheet("background-color: white")
-
+        # Estilos generales para la ventana principal
+        # Estilos generales para la ventana principal
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: white;
+            }
+            QWidget {
+                background-color: white;
+                border-radius: 10px;
+                border: 1px solid #cfcfcf;
+                box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+            }
+            QPushButton {
+                background-color: #007BFF;
+                color: white;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+            QPushButton:disabled {
+                background-color: #e6e6e6;
+                color: #a0a0a0;
+            }
+            QLineEdit {
+                background-color: #F5F5F5;
+                border: 2px solid #87CEEB;
+                border-radius: 10px;
+                padding: 8px;
+                font-size: 14px;
+                color: #333;
+            }
+            QLineEdit:focus {
+                border: 2px solid #4682B4;
+                background-color: #FFFFFF;
+            }
+            QListWidget {
+                background-color: #FFFFFF;
+                border: 1px solid #DDDDDD;
+                border-radius: 10px;
+            }
+            QLabel {
+                font-family: Arial, sans-serif;
+                font-size: 12pt;
+            }
+        """)
         self.crear_interfaz()
 
 
@@ -75,9 +121,10 @@ class VentanaPrincipal(QMainWindow):
             nombre_archivo = item.text().strip()
             print(f"Archivo seleccionado: {nombre_archivo}")
             tarjeta = VentanaOpcionesArchivos(nombre_archivo)
-            tarjeta.setParent(self)  # Establecer el padre para la tarjeta
-            tarjeta.move(300, 200)  # Posición en la ventana principal
-            tarjeta.show()
+            tarjeta.exec()
+            #tarjeta.setParent(self)  # Establecer el padre para la tarjeta
+            #tarjeta.move(300, 200)  # Posición en la ventana principal
+            #tarjeta.show()
 
     def crear_barra_busqueda(self):
         # Contenedor para la barra de búsqueda
@@ -183,9 +230,9 @@ class VentanaPrincipal(QMainWindow):
         elif item.text() == "Escanear":
             self.cambiar_a_ventana_escaneo()  # Cambia a la ventana de escaneo
         elif item.text() == "Configuración":
-            pass # Lo desabilito por que no hace nada aun
-         #  tarjeta = VentanaConfiguracion()
-           # tarjeta.exec_()
+            #pass # Lo desabilito por que no hace nada aun
+            tarjeta = VentanaConfiguracion()
+            tarjeta.exec_()
         elif item.text() == "Salir":
             self.close()
 

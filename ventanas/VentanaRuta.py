@@ -1,6 +1,6 @@
 import json
 import os
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QFileDialog, QLabel
+from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import QApplication
 import sys
 class VentanaSeleccionarRuta(QDialog):
@@ -10,7 +10,32 @@ class VentanaSeleccionarRuta(QDialog):
         super().__init__()
         self.setWindowTitle("Seleccionar Ruta de Guardado")
         self.setFixedSize(300, 200)
-
+        # Aplicar estilos generales
+        self.setStyleSheet("""
+            QDialog {
+                background-color: white;
+                border-radius: 10px;
+                border: 1px solid #cfcfcf;
+                box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+            }
+            QPushButton {
+                background-color: #007BFF;
+                color: white;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+            QPushButton:disabled {
+                background-color: #e6e6e6;
+                color: #a0a0a0;
+            }
+            QLabel {
+                font-family: Arial, sans-serif;
+                font-size: 12pt;
+            }
+        """)
         # Cargar ruta desde archivo de configuración o usar predeterminada
         self.ruta_default = os.path.expanduser("~/Documentos")  # Ruta predeterminada
         self.ruta_actual = self.cargar_ruta()  # Ruta actual (cargada)
@@ -20,21 +45,22 @@ class VentanaSeleccionarRuta(QDialog):
         self.label_ruta.setWordWrap(True)
 
         # Botones
-        self.boton_cambiar_ruta = QPushButton("Cambiar Ruta", self)
+        self.boton_cambiar_ruta = QPushButton("Cambiar", self)
         self.boton_cambiar_ruta.clicked.connect(self.cambiar_ruta)
 
-        self.boton_restaurar_default = QPushButton("Restablecer Ruta Predeterminada", self)
+        self.boton_restaurar_default = QPushButton("Restablecer", self)
         self.boton_restaurar_default.clicked.connect(self.restaurar_ruta_default)
-
-        self.boton_guardar = QPushButton("Guardar", self)
+        
+        '''self.boton_guardar = QPushButton("Guardar", self)
         self.boton_guardar.clicked.connect(self.guardar_archivo)
-
+        self.boton_guardar.setEnabled(False)'''
         # Layout
-        layout = QVBoxLayout()
+        layout=QVBoxLayout()
         layout.addWidget(self.label_ruta)
+        #layout = QHBoxLayout()
         layout.addWidget(self.boton_cambiar_ruta)
         layout.addWidget(self.boton_restaurar_default)
-        layout.addWidget(self.boton_guardar)
+        #layout.addWidget(self.boton_guardar)
         self.setLayout(layout)
 
     def cargar_ruta(self):
@@ -72,13 +98,4 @@ class VentanaSeleccionarRuta(QDialog):
         print(f"Archivo guardado en: {archivo_ejemplo}")
 
 
-if __name__ == "__main__":
-    # Crear aplicación
-    app = QApplication(sys.argv)
 
-    # Crear y mostrar la ventana principal
-    ventana = VentanaSeleccionarRuta()
-    ventana.exec_()
-
-    # Salir de la aplicación al cerrar la ventana
-    sys.exit(app.exec_())

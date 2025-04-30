@@ -16,72 +16,135 @@ class VentanaEscaneo(QWidget):
         self.setWindowTitle("Escaneo")
         self.resize(800, 600)
         
+        # Estilo general de la ventana
+        self.setStyleSheet("""
+            QWidget {
+                background-color: white;
+                border-radius: 10px;
+                border: 1px solid #cfcfcf;
+                box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+            }
+            QPushButton {
+                background-color: #007BFF;
+                color: white;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+            
+            QPushButton:disabled {
+                background-color: #e6e6e6;
+                color: #a0a0a0;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }
+            QSlider {
+                border: none;
+                background: #e6e6e6;
+                height: 10px;
+            }
+            QLabel {
+                font-family: Arial, sans-serif;
+                font-size: 12pt;
+            }
+        """)
+
         # Crear interruptor deslizable
+         # Crear interruptor deslizable
         self.interruptor = InterruptorDeslizable()
-        
+        self.interruptor.estado_cambiado.connect(self.actualizar_estado_botones)
+
         self.slider_brillo = QSlider(Qt.Horizontal)
         self.slider_brillo.setRange(0, 100)
         self.slider_brillo.setValue(50)
         self.slider_brillo.valueChanged.connect(self.cambiar_brillo)
         
+        self.slider_brillo.setEnabled(False)
+
         self.slider_contraste = QSlider(Qt.Horizontal)
         self.slider_contraste.setRange(0, 100)
         self.slider_contraste.setValue(50)
         self.slider_contraste.valueChanged.connect(self.cambiar_contraste)
-        
+        self.slider_contraste.setEnabled(False)
         # Etiquetas para los sliders
         self.etiqueta_brillo = QLabel(f"Brillo: {self.slider_brillo.value()}")
         self.etiqueta_contraste = QLabel(f"Contraste: {self.slider_contraste.value()}")
-
-        # Etiquetas de imagen con tamaño fijo
+        
+        
+        # Etiquetas de imagen con estilo mejorado
         self.etiqueta_original = QLabel("Imagen original")
         self.etiqueta_original.setFixedSize(400, 300)
-        self.etiqueta_original.setStyleSheet("border: 1px solid black; padding: 10px;")
+        self.etiqueta_original.setStyleSheet("""
+            border: 1px solid #cfcfcf;
+            padding: 10px;
+            border-radius: 5px;
+        """)
 
         self.etiqueta_escaneada = QLabel("Imagen escaneada")
         self.etiqueta_escaneada.setFixedSize(400, 300)
-        self.etiqueta_escaneada.setStyleSheet("border: 1px solid black; padding: 10px;")
-
+        self.etiqueta_escaneada.setStyleSheet("""
+            border: 1px solid #cfcfcf;
+            padding: 10px;
+            border-radius: 5px;
+        """)
+        imagen_predeterminada = os.path.join(os.path.dirname(__file__), "..","recursos/assets","predeterminada.png")
+        imagen_error = os.path.join(os.path.dirname(__file__), "..","recursos/assets","error.png")
+        # Cargar imagen predeterminada
+        self.imagen_predeterminada = QPixmap(imagen_predeterminada)
+        self.imagen_error = QPixmap(imagen_error)
+        self.etiqueta_original.setPixmap(self.imagen_predeterminada.scaled(self.etiqueta_original.width(),
+                                                                      self.etiqueta_original.height(),
+                                                                      Qt.KeepAspectRatio))
+        self.etiqueta_escaneada.setPixmap(self.imagen_predeterminada.scaled(self.etiqueta_escaneada.width(),
+                                                                       self.etiqueta_escaneada.height(),
+                                                                       Qt.KeepAspectRatio))
+        
         self.boton_seleccionar = QPushButton("Seleccionar Imagen")
         self.boton_seleccionar.clicked.connect(self.seleccionar_imagen)
 
-        self.boton_scaneo = QPushButton("Escanear Imagen con camara")
+        self.boton_scaneo = QPushButton("Escanear Imagen con cámara")
         self.boton_scaneo.clicked.connect(self.escanear_imagen)
         self.boton_scaneo.setEnabled(False)
         
         self.boton_procesar = QPushButton("Procesar Imagen")
         self.boton_procesar.clicked.connect(self.procesar_imagen)
         self.boton_procesar.setEnabled(False)  # Deshabilitado al inicio
-
         
         # Crear interfaz
         self.crear_interfaz()
 
+    def actualizar_estado_botones(self, estado):
+        """Habilita el botón de escaneo cuando el interruptor está activado"""
+        self.boton_scaneo.setEnabled(estado)
+        self.boton_seleccionar.setEnabled(not estado)
+        print("Entro")
     def crear_interfaz(self):
         layout_principal = QVBoxLayout()
         self.setLayout(layout_principal)
         
         layout_principal.addWidget(self.interruptor)
-        
         layout_principal.addWidget(self.etiqueta_brillo)
         layout_principal.addWidget(self.slider_brillo)
         layout_principal.addWidget(self.etiqueta_contraste)
         layout_principal.addWidget(self.slider_contraste)
 
         layout_apartados = QHBoxLayout()
+        layout_botones = QHBoxLayout()
         layout_principal.addLayout(layout_apartados)
-
+        layout_principal.addLayout(layout_botones)
         # Apartado para imágenes
         layout_apartados.addWidget(self.etiqueta_original)
         layout_apartados.addWidget(self.etiqueta_escaneada)
         
         # Añadir elementos al diseño principal
-        layout_principal.addWidget(self.boton_seleccionar)
-        layout_principal.addWidget(self.boton_scaneo)
-        layout_principal.addWidget(self.boton_procesar)
+        layout_botones.addWidget(self.boton_seleccionar)
+        layout_botones.addWidget(self.boton_scaneo)
+        layout_botones.addWidget(self.boton_procesar)
         
     def escanear_imagen(self):
-        print("jsj")
+        print("Escaneando imagen...")
 
     def cambiar_brillo(self, valor):
         self.etiqueta_brillo.setText(f"Brillo: {valor}")
@@ -95,28 +158,31 @@ class VentanaEscaneo(QWidget):
         self.ruta_imagen, _ = QFileDialog.getOpenFileName(self, "Seleccionar Imagen", "", "Imágenes (*.png *.jpg *.jpeg *.bmp)")
         if self.ruta_imagen:
             self.boton_procesar.setEnabled(True)
+            self.slider_brillo.setEnabled(True)
+            self.slider_contraste.setEnabled(True)
+            escaner = imageScanner(self.ruta_imagen)
+            imagen_original, imagen_procesada = escaner.scan()
+            self.imagenProcesada = imagen_procesada
 
-            escaner = imageScanner(self.ruta_imagen)  # Llama a la función existente
-            imagen_original, imagen_procesada = escaner.scan()  # Usa su resultado
-            self.imagenProcesada=imagen_procesada
             # Validar imágenes antes de procesarlas
             if isinstance(imagen_original, (np.ndarray, cv2.UMat)) and isinstance(imagen_procesada, (np.ndarray, cv2.UMat)):
                 self.mostrar_imagen(imagen_original, self.etiqueta_original)
                 self.mostrar_imagen(imagen_procesada, self.etiqueta_escaneada)
             else:
+
+                self.etiqueta_original.setPixmap(self.imagen_error.scaled(self.etiqueta_original.width(),
+                                                                      self.etiqueta_original.height(),
+                                                                      Qt.KeepAspectRatio))
+                self.etiqueta_escaneada.setPixmap(self.imagen_error.scaled(self.etiqueta_escaneada.width(),
+                                                                       self.etiqueta_escaneada.height(),
+                                                                       Qt.KeepAspectRatio))
+                self.boton_procesar.setEnabled(False)  # Deshabilitado al inicio
                 print(f"Error: La imagen procesada no es válida. Valor recibido: {imagen_procesada}")
 
     def procesar_imagen(self):
-        tarjeta = VentanaGuardadoArchivo( self.imagenProcesada)
+        tarjeta = VentanaGuardadoArchivo(self.imagenProcesada)
         tarjeta.exec_()
         self.boton_procesar.setEnabled(False)
-        '''direccion = os.path.join(os.path.dirname(__file__), "..", "documentos")
-        if direccion:
-            print("Procesando la imagen escaneada...")
-            extraccion(self.imagenProcesada)
-            self.boton_procesar.setEnabled(False)
-        else:
-            print("No se ha procesado una imagen aún.")'''
 
     def mostrar_imagen(self, image, label):
         """Convierte una imagen de OpenCV a formato Pixmap y la ajusta al QLabel manteniendo la proporción."""
@@ -125,7 +191,7 @@ class VentanaEscaneo(QWidget):
             return
         
         if image.dtype != np.uint8:
-            image = cv2.convertScaleAbs(image)  # Convierte la imagen a uint8
+            image = cv2.convertScaleAbs(image)
 
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         height, width, channels = image_rgb.shape
@@ -134,4 +200,3 @@ class VentanaEscaneo(QWidget):
         pixmap = QPixmap.fromImage(q_image)
 
         label.setPixmap(pixmap.scaled(label.width(), label.height(), Qt.KeepAspectRatio))
-

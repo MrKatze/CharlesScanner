@@ -1,8 +1,9 @@
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect,pyqtSignal
 from PyQt5.QtGui import QPainter, QColor, QBrush
 from PyQt5.QtWidgets import QWidget, QApplication, QVBoxLayout
 
 class InterruptorDeslizable(QWidget):
+    estado_cambiado = pyqtSignal(bool)  
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedSize(25, 15)
@@ -10,7 +11,8 @@ class InterruptorDeslizable(QWidget):
 
     def mousePressEvent(self, event):
         self.activado = not self.activado
-        self.update()  # Redibujar el interruptor
+        self.estado_cambiado.emit(self.activado)  # Emitir señal al cambiar el estado
+        self.update()
         print("Estado:", "Activado" if self.activado else "Desactivado")
 
     def paintEvent(self, event):

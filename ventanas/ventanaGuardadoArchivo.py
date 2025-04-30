@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 from app.Extraer_texto import extraccion
 from PyQt5.QtCore import Qt
 from app.Extraer_texto import conversionformato
-
+import qtawesome as qta
 class VentanaGuardadoArchivo(QDialog):
     def __init__(self, ImagenProcesada):
         super().__init__()
@@ -11,10 +11,39 @@ class VentanaGuardadoArchivo(QDialog):
         self.imagenProcesada = ImagenProcesada
 
         # Agregar un borde visible al diálogo
+
         self.setStyleSheet("""
             QDialog {
                 background-color: white;
                 border-radius: 10px;
+                border: 1px solid #cfcfcf;
+                box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+            }
+            QPushButton {
+                background-color: #007BFF;
+                color: white;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }
+                           
+             QPushButton:disabled {
+                background-color: #e6e6e6;
+                color: #a0a0a0;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }
+                           
+            QPushButton:hover {
+                background-color: #0056b3;
+            }
+            QLineEdit, QTextEdit {
+                border: 1px solid #cfcfcf;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QLabel, QPushButton, QLineEdit, QTextEdit {
+                font-family: Arial, sans-serif;
+                font-size: 12pt;
             }
         """)
 
@@ -31,24 +60,30 @@ class VentanaGuardadoArchivo(QDialog):
         self.vistaPreviaTexto = QTextEdit()
         self.vistaPreviaTexto.setReadOnly(True)  # Para que no sea editable
         layout.addWidget(self.vistaPreviaTexto)
+        
 
+        layout_botones = QHBoxLayout()
+        layout.addLayout(layout_botones)
         # Botón para cargar el texto extraído en el campo de visualización
         self.btnCargarTexto = QPushButton("Extraer texto")
         self.btnCargarTexto.setEnabled(False)
+        self.btnCargarTexto.setIcon(qta.icon('fa5s.arrow-alt-circle-down'))
         self.btnCargarTexto.clicked.connect(self.cargar_texto)
-        layout.addWidget(self.btnCargarTexto)
+        layout_botones.addWidget(self.btnCargarTexto)
 
         # Botón para guardar en formato PDF
         self.btnPDF = QPushButton("Guardar en formato pdf")
         self.btnPDF.setEnabled(False)  # Desactivado inicialmente
+        self.btnPDF.setIcon(qta.icon('fa5s.file-pdf'))
         self.btnPDF.clicked.connect(self.realizar_opcion)
-        layout.addWidget(self.btnPDF)
+        layout_botones.addWidget(self.btnPDF)
 
         # Botón para guardar en formato DOCX
         self.btnWORD = QPushButton("Guardar en formato docx")
         self.btnWORD.setEnabled(False)  # Desactivado inicialmente
+        self.btnWORD.setIcon(qta.icon('fa5s.file-word'))
         self.btnWORD.clicked.connect(self.realizar_opcion)
-        layout.addWidget(self.btnWORD)
+        layout_botones.addWidget(self.btnWORD)
 
         # Conexión para habilitar botones cuando se ingrese texto
         self.nombreArchivo.textChanged.connect(self.habilitar_botonExtraccion)
