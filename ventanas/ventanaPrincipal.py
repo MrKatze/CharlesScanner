@@ -14,14 +14,13 @@ class VentanaPrincipal(QMainWindow):
     def __init__(self):
         super().__init__()
         
-        self.setWindowTitle("CScan")
+        self.setWindowTitle("Charles Scanner")
         self.resize(800, 600)
         
         ruta_logo = os.path.join(os.path.dirname(__file__), "..","recursos/assets","logo.png")
       #  ruta_logo = os.path.abspath("../assets/logo.png")
         self.setWindowIcon(QIcon(ruta_logo))
         self.setStyleSheet("background-color: white")
-        # Estilos generales para la ventana principal
         # Estilos generales para la ventana principal
         self.setStyleSheet("""
             QMainWindow {
