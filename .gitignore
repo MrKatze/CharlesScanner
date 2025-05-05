@@ -45,3 +45,8 @@ htmlcov/
 coverage.xml
 
 # Distribución de paquetes
+
+
+# Credenciales y secretos
+credentials.json
+token.json

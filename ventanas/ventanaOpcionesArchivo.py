@@ -1,7 +1,12 @@
 from PyQt5.QtWidgets import *
-from ventanas.ventanaNotificacion import  VentanaNotificacion
+from ventanas.ventanaNotificacion import VentanaNotificacion
 import qtawesome as qta
 from PyQt5.QtCore import QSize, Qt
+from app.google_drive import upload_to_drive
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 class  VentanaOpcionesArchivos(QDialog):
     def __init__(self,nombre_archivo):
         super().__init__()
@@ -59,10 +64,15 @@ class  VentanaOpcionesArchivos(QDialog):
             layout.addWidget(boton)
             i+=1
 
+
     def realizar_opcion(self):
+        file_path = os.path.join(BASE_DIR, 'documentos', self.nombre_archivo)
         boton_presionado = self.sender()
 
         if boton_presionado.text() == "Subir a Drive Google":
+            # upload_to_drive(f'/documentos/{self.nombre_archivo}',self.nombre_archivo)
+            upload_to_drive(file_path, self.nombre_archivo)
+            
             print("Subiendo")  # Aquí podrías añadir la integración con OpenCV
         elif boton_presionado.text() == "Búsqueda Inteligente":
             print("Buscando")  # Acción para la otra opción
@@ -70,4 +80,33 @@ class  VentanaOpcionesArchivos(QDialog):
             tarjeta=VentanaNotificacion(self.nombre_archivo,5000);
             tarjeta.exec();
             self.close() 
-            print("Exportando")  # Acción para la otra opción
+            print("Exportando")  # Acción para la otra opcióndef realizar_opcion(self):
+        file_path = os.path.join(BASE_DIR, 'documentos', self.nombre_archivo)
+        boton_presionado = self.sender()
+
+        if boton_presionado.text() == "Subir a Drive Google":
+            try:
+                upload_to_drive(file_path, self.nombre_archivo)
+
+                QMessageBox.information(
+                    self,
+                    "Subida exitosa",
+                    f"El archivo '{self.nombre_archivo}' se subió correctamente a Google Drive."
+                )
+                print("Subiendo")
+            except Exception as e:
+                QMessageBox.critical(
+                    self,
+                    "Error al subir",
+                    f"No se pudo subir el archivo.\n\nDetalle:\n{str(e)}"
+                )
+                print(f"Error al subir: {e}")
+
+        elif boton_presionado.text() == "Búsqueda Inteligente":
+            print("Buscando")
+
+        elif boton_presionado.text() == "Exportación a PDF":
+            tarjeta = VentanaNotificacion(self.nombre_archivo, 5000)
+            tarjeta.exec()
+            self.close()
+            print("Exportando")
