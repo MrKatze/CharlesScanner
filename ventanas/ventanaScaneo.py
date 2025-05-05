@@ -8,6 +8,11 @@ import numpy as np
 from app.imageScanner import imageScanner  
 from recursos.InterruptorDeslizable import InterruptorDeslizable
 from ventanas.ventanaGuardadoArchivo import VentanaGuardadoArchivo
+from app.cameraScanner import cameraScanner
+from datetime import datetime
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ruta_destino = os.path.join('documentos')
 
 class VentanaEscaneo(QWidget):
     def __init__(self, ventana_principal=None):
@@ -142,9 +147,46 @@ class VentanaEscaneo(QWidget):
         layout_botones.addWidget(self.boton_seleccionar)
         layout_botones.addWidget(self.boton_scaneo)
         layout_botones.addWidget(self.boton_procesar)
-        
+            
+    def tomar_foto_guardar(self, directorio_destino):
+        cam = cv2.VideoCapture(0)
+
+        if not cam.isOpened():
+            print("No se pudo acceder a la cámara.")
+            return
+
+        print("Presiona ESPACIO para tomar la foto. ESC para salir.")
+
+        while True:
+            ret, frame = cam.read()
+            if not ret:
+                print("Error al capturar imagen.")
+                break
+
+            cv2.imshow("Presiona ESPACIO para capturar", frame)
+
+            key = cv2.waitKey(1)
+            if key == 27:  # ESC
+                print("Cancelado.")
+                break
+            elif key == 32:  # ESPACIO
+                # Generar nombre de archivo con timestamp
+                timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+                nombre_archivo = f"foto_{timestamp}.png"
+                ruta_guardado = os.path.join(directorio_destino, nombre_archivo)
+
+                cv2.imwrite(ruta_guardado, frame)
+                print(f"Foto guardada en: {ruta_guardado}")
+                break
+
+        cam.release()
+        cv2.destroyAllWindows()
+            
     def escanear_imagen(self):
         print("Escaneando imagen...")
+        print('PRUEBAAA 2, ruta: ', ruta_destino)
+        self.tomar_foto_guardar(ruta_destino)
+        self.seleccionar_imagen()
 
     def cambiar_brillo(self, valor):
         self.etiqueta_brillo.setText(f"Brillo: {valor}")
@@ -157,10 +199,11 @@ class VentanaEscaneo(QWidget):
     def seleccionar_imagen(self):
         self.ruta_imagen, _ = QFileDialog.getOpenFileName(self, "Seleccionar Imagen", "", "Imágenes (*.png *.jpg *.jpeg *.bmp)")
         if self.ruta_imagen:
+            print('PRUEBAAAAAA: ', self.ruta_imagen)
             self.boton_procesar.setEnabled(True)
             self.slider_brillo.setEnabled(True)
             self.slider_contraste.setEnabled(True)
-            escaner = imageScanner(self.ruta_imagen)
+            escaner = imageScanner(self.ruta_imagen)    
             imagen_original, imagen_procesada = escaner.scan()
             self.imagenProcesada = imagen_procesada
 
@@ -178,6 +221,33 @@ class VentanaEscaneo(QWidget):
                                                                        Qt.KeepAspectRatio))
                 self.boton_procesar.setEnabled(False)  # Deshabilitado al inicio
                 print(f"Error: La imagen procesada no es válida. Valor recibido: {imagen_procesada}")
+
+    # def seleccionar_imagen_camera(self):
+    #     self.ruta_imagen, _ = 
+    #     if self.ruta_imagen:
+    #         print('PRUEBAAAAAA_camera: ', self.ruta_imagen)
+    #         self.boton_procesar.setEnabled(True)
+    #         self.slider_brillo.setEnabled(True)
+    #         self.slider_contraste.setEnabled(True)
+    #         escaner = imageScanner(self.ruta_imagen)
+    #         imagen_original, imagen_procesada = escaner.scan()
+    #         self.imagenProcesada = imagen_procesada
+
+    #         # Validar imágenes antes de procesarlas
+    #         if isinstance(imagen_original, (np.ndarray, cv2.UMat)) and isinstance(imagen_procesada, (np.ndarray, cv2.UMat)):
+    #             self.mostrar_imagen(imagen_original, self.etiqueta_original)
+    #             self.mostrar_imagen(imagen_procesada, self.etiqueta_escaneada)
+    #         else:
+
+    #             self.etiqueta_original.setPixmap(self.imagen_error.scaled(self.etiqueta_original.width(),
+    #                                                                   self.etiqueta_original.height(),
+    #                                                                   Qt.KeepAspectRatio))
+    #             self.etiqueta_escaneada.setPixmap(self.imagen_error.scaled(self.etiqueta_escaneada.width(),
+    #                                                                    self.etiqueta_escaneada.height(),
+    #                                                                    Qt.KeepAspectRatio))
+    #             self.boton_procesar.setEnabled(False)  # Deshabilitado al inicio
+    #             print(f"Error: La imagen procesada no es válida. Valor recibido: {imagen_procesada}")
+
 
     def procesar_imagen(self):
         tarjeta = VentanaGuardadoArchivo(self.imagenProcesada)
@@ -200,3 +270,11 @@ class VentanaEscaneo(QWidget):
         pixmap = QPixmap.fromImage(q_image)
 
         label.setPixmap(pixmap.scaled(label.width(), label.height(), Qt.KeepAspectRatio))
+
+    def abrirCamara():
+        camera = cameraScanner(0)
+        while True:
+            camera.scan(show=True)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                camera.close()
+                break
