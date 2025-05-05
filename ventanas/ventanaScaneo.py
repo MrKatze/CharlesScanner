@@ -10,6 +10,7 @@ from recursos.InterruptorDeslizable import InterruptorDeslizable
 from ventanas.ventanaGuardadoArchivo import VentanaGuardadoArchivo
 from app.cameraScanner import cameraScanner
 from datetime import datetime
+import qtawesome as qta
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ruta_destino = os.path.join('documentos')
@@ -65,19 +66,20 @@ class VentanaEscaneo(QWidget):
         self.slider_brillo.setRange(0, 100)
         self.slider_brillo.setValue(50)
         self.slider_brillo.valueChanged.connect(self.cambiar_brillo)
-        
-        self.slider_brillo.setEnabled(False)
+        self.slider_brillo.setVisible(False)
+       
 
         self.slider_contraste = QSlider(Qt.Horizontal)
         self.slider_contraste.setRange(0, 100)
         self.slider_contraste.setValue(50)
         self.slider_contraste.valueChanged.connect(self.cambiar_contraste)
-        self.slider_contraste.setEnabled(False)
+        self.slider_contraste.setVisible(False)
         # Etiquetas para los sliders
         self.etiqueta_brillo = QLabel(f"Brillo: {self.slider_brillo.value()}")
         self.etiqueta_contraste = QLabel(f"Contraste: {self.slider_contraste.value()}")
-        
-        
+        self.etiqueta_brillo.setVisible(False)
+        self.etiqueta_contraste.setVisible(False)
+
         # Etiquetas de imagen con estilo mejorado
         self.etiqueta_original = QLabel("Imagen original")
         self.etiqueta_original.setFixedSize(400, 300)
@@ -107,13 +109,16 @@ class VentanaEscaneo(QWidget):
                                                                        Qt.KeepAspectRatio))
         
         self.boton_seleccionar = QPushButton("Seleccionar Imagen")
+        self.boton_seleccionar.setIcon(qta.icon('fa5s.image'))
         self.boton_seleccionar.clicked.connect(self.seleccionar_imagen)
 
         self.boton_scaneo = QPushButton("Escanear Imagen con cámara")
+        self.boton_scaneo.setIcon(qta.icon('fa5s.camera'))
         self.boton_scaneo.clicked.connect(self.escanear_imagen)
         self.boton_scaneo.setEnabled(False)
         
         self.boton_procesar = QPushButton("Procesar Imagen")
+        self.boton_procesar.setIcon(qta.icon('fa5s.spinner'))
         self.boton_procesar.clicked.connect(self.procesar_imagen)
         self.boton_procesar.setEnabled(False)  # Deshabilitado al inicio
         
@@ -190,6 +195,7 @@ class VentanaEscaneo(QWidget):
 
     def cambiar_brillo(self, valor):
         self.etiqueta_brillo.setText(f"Brillo: {valor}")
+        
         print(f"Brillo ajustado a: {valor}")
         
     def cambiar_contraste(self, valor):
@@ -250,9 +256,10 @@ class VentanaEscaneo(QWidget):
 
 
     def procesar_imagen(self):
+        self.boton_procesar.setEnabled(False)
         tarjeta = VentanaGuardadoArchivo(self.imagenProcesada)
         tarjeta.exec_()
-        self.boton_procesar.setEnabled(False)
+        
 
     def mostrar_imagen(self, image, label):
         """Convierte una imagen de OpenCV a formato Pixmap y la ajusta al QLabel manteniendo la proporción."""

@@ -23,17 +23,6 @@ def conversionformato(texto_extraido,name,ruta_guardado,indicador):
     documento.save(buffer)
     buffer.seek(0)
     
-    #if password is not None:
-        # Proceso de guardar con contraseña
-    #    with open(ruta_guardado, "wb") as archivo:
-     #       password = str(password)  # Asegúrate de que `password` sea un string
-     #      encrypted_document = msoffcrypto.OfficeFile(buffer)
-      #      if not isinstance(password, str):
-      #          raise TypeError("La contraseña debe ser un string")
-      #      encrypted_document.encrypt(archivo, password)
-     #       print(f"Archivo .docx protegido con contraseña creado exitosamente en: {ruta_guardado}")
-    #else:
-     #   print(ruta_guardado)
     # Guardar el documento como archivo .docx
     documento.save(ruta_guardado)
     print(f"Archivo .docx creado exitosamente en: {ruta_guardado}")
@@ -48,6 +37,8 @@ def conversionformato(texto_extraido,name,ruta_guardado,indicador):
          #   print(f"Archivo .docx eliminado: {ruta_guardado}")
         #else:
           #  print("El archivo .docx no existe o ya fue eliminado.")
+    
+    return 1
 
 def extraccion(imagen,name):
     # Inicializa el lector

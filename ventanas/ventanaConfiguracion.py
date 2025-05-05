@@ -38,14 +38,14 @@ class VentanaConfiguracion(QDialog):
         layout = QHBoxLayout()
         
         
-        self.btnEditar = QToolButton()
-        self.btnEditar.setText("Abrir Cámara")
-      #  self.btnEditar.setFixedSize(90, 120)  # Anchura = 100 px, Altura = 80 px
-        self.btnEditar.setIcon(qta.icon("fa5s.camera"))  # Ícono de FontAwesome
-        self.btnEditar.setIconSize(QSize(40, 40))  # Ajusta el tamaño del icono
-        self.btnEditar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)  # Texto debajo del icono
-        self.btnEditar.clicked.connect(self.realizar_opcion)
-        layout.addWidget(self.btnEditar)
+        self.btnCamara = QToolButton()
+        self.btnCamara.setText("Abrir Cámara")
+      #  self.btnCamara.setFixedSize(90, 120)  # Anchura = 100 px, Altura = 80 px
+        self.btnCamara.setIcon(qta.icon("fa5s.camera"))  # Ícono de FontAwesome
+        self.btnCamara.setIconSize(QSize(40, 40))  # Ajusta el tamaño del icono
+        self.btnCamara.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)  # Texto debajo del icono
+        self.btnCamara.clicked.connect(self.realizar_opcion)
+        layout.addWidget(self.btnCamara)
 
         self.btnRuta = QToolButton()
         self.btnRuta.setText("Cambiar Ruta")
@@ -62,9 +62,11 @@ class VentanaConfiguracion(QDialog):
         boton_presionado = self.sender()
 
         if boton_presionado.text() == "Abrir Cámara":
-            print("Cámara activada")  # Aquí podrías añadir la integración con OpenCV
+          #  print("Cámara activada")  # Aquí podrías añadir la integración con OpenCV
+            
+            self.close()
         elif boton_presionado.text() == "Cambiar Ruta":
             self.close()
             tarjeta = VentanaSeleccionarRuta()
             tarjeta.exec_()
-            print("Opción alternativa seleccionada")  # Acción para la otra opción
+           # print("Opción alternativa seleccionada")  # Acción para la otra opción
