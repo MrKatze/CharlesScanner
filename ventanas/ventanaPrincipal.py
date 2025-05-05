@@ -120,7 +120,10 @@ class VentanaPrincipal(QMainWindow):
         if item.flags() & Qt.ItemIsSelectable:
             nombre_archivo = item.text().strip()
             print(f"Archivo seleccionado: {nombre_archivo}")
-            tarjeta = VentanaOpcionesArchivos(nombre_archivo)
+            if nombre_archivo.endswith('.docx'):
+                tarjeta = VentanaOpcionesArchivos(nombre_archivo,1)
+            else:
+                tarjeta = VentanaOpcionesArchivos(nombre_archivo,0)
             tarjeta.exec()
             #tarjeta.setParent(self)  # Establecer el padre para la tarjeta
             #tarjeta.move(300, 200)  # Posición en la ventana principal
