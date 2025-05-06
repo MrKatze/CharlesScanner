@@ -13,9 +13,10 @@ import qtawesome as qta
 class VentanaPrincipal(QMainWindow):
     def __init__(self):
         super().__init__()
-        
-        self.setWindowTitle("Charles Scanner")
-        self.resize(800, 600)
+        # ... (tu código de inicialización) ...
+        self.menu_lateral_widget = None # Añade una variable para guardar la referencia al widget del menú
+        self.menu_lateral_lista = None  # Añade una variable para guardar la referencia a la lista del menú
+        self.crear_interfaz()
         
         ruta_logo = os.path.join(os.path.dirname(__file__), "..","recursos/assets","logo.png")
       #  ruta_logo = os.path.abspath("../assets/logo.png")
@@ -28,9 +29,7 @@ class VentanaPrincipal(QMainWindow):
             }
             QWidget {
                 background-color: white;
-                border-radius: 10px;
-                border: 1px solid #cfcfcf;
-                box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+                border: 1px solid #cfcfcf; /* Reemplaza box-shadow */
             }
             QPushButton {
                 background-color: #007BFF;
@@ -75,15 +74,15 @@ class VentanaPrincipal(QMainWindow):
         contenedor_principal = QWidget()
         self.layout_principal = QHBoxLayout()  # Cambiamos a `self.layout_principal`
         contenedor_principal.setLayout(self.layout_principal)
-        
+
         # Crear el menú lateral
-        menu_lateral = crear_menu_lateral(self.manejar_menu)
-        self.layout_principal.addWidget(menu_lateral)
+        self.menu_lateral_widget, self.menu_lateral_lista = crear_menu_lateral(self.manejar_menu)
+        self.layout_principal.addWidget(self.menu_lateral_widget)
 
         # Crear la región principal
         self.region_principal = self.crear_region_principal()
         self.layout_principal.addWidget(self.region_principal)
-        
+
         self.setCentralWidget(contenedor_principal)
 
 
@@ -133,7 +132,8 @@ class VentanaPrincipal(QMainWindow):
         barra_busqueda = QWidget()
         layout_busqueda = QHBoxLayout()
         barra_busqueda.setLayout(layout_busqueda)
-        barra_busqueda.setFixedSize(500, 60)
+        barra_busqueda.setFixedSize(600, 60)
+
         # Etiqueta de búsqueda
         etiqueta = QLabel("Buscar:")
         etiqueta.setStyleSheet(
@@ -142,7 +142,6 @@ class VentanaPrincipal(QMainWindow):
                 background-color: #F5F5F5; /* Fondo gris claro */
                 border: 2px solid #87CEEB; /* Borde azul cielo */
                 border-radius: 10px; /* Bordes redondeados */
-               
                 color: #333; /* Color del texto */
                 font-size: 14px; /* Tamaño de la fuente */
             }
@@ -153,6 +152,7 @@ class VentanaPrincipal(QMainWindow):
         """
         )
         layout_busqueda.addWidget(etiqueta)
+
         # Campo de texto para la búsqueda
         self.campo_busqueda = QLineEdit()
         self.campo_busqueda.setPlaceholderText("Escribe aquí para buscar archivos...")
@@ -176,18 +176,159 @@ class VentanaPrincipal(QMainWindow):
         boton_buscar = QPushButton("")
         boton_buscar.setFixedSize(40, 40)
         boton_buscar.setStyleSheet("""
-        QPushButton{
-        background-color:#87CEEB;
-        border-radius:20px;
-        }
-    """)
+            QPushButton {
+                background-color: #87CEEB;
+                border-radius: 20px;
+            }
+        """)
         boton_buscar.setIcon(qta.icon('fa5s.search', color='black'))
         boton_buscar.clicked.connect(self.buscar_archivos)
         layout_busqueda.addWidget(boton_buscar)
 
+        # Botón para abrir el explorador de archivos
+        boton_explorador = QPushButton("")
+        boton_explorador.setFixedSize(40, 40)
+        boton_explorador.setStyleSheet("""
+            QPushButton {
+                background-color: #87CEEB;
+                border-radius: 20px;
+            }
+        """)
+        boton_explorador.setIcon(qta.icon('fa5s.folder-open', color='black'))
+        boton_explorador.clicked.connect(self.abrir_explorador_archivos)
+        layout_busqueda.addWidget(boton_explorador)
+
+        # Botón para alternar entre modo oscuro y claro
+        self.boton_modo = QPushButton("")
+        self.boton_modo.setFixedSize(40, 40)
+        self.boton_modo.setStyleSheet("""
+            QPushButton {
+                background-color: #87CEEB;
+                border-radius: 20px;
+            }
+        """)
+        self.boton_modo.setIcon(qta.icon('fa5s.moon', color='black'))  # Ícono inicial para modo oscuro
+        self.boton_modo.setProperty("modo", "claro")  # Establecer modo inicial como claro
+        self.boton_modo.clicked.connect(self.alternar_modo)
+        layout_busqueda.addWidget(self.boton_modo)
+
         return barra_busqueda
 
+    def alternar_modo(self):
+        """Alterna entre modo oscuro y modo claro."""
+        modo_actual = self.boton_modo.property("modo")
+        if modo_actual == "claro":
+            # Cambiar a modo oscuro
+            self.setStyleSheet("""
+                QMainWindow { background-color: #121212; }
+                QWidget { background-color: #121212; border: 1px solid #333333; }
+                QPushButton { background-color: #1E88E5; color: white; border-radius: 5px; padding: 5px 10px; }
+                QPushButton:hover { background-color: #1565C0; }
+                QPushButton:disabled { background-color: #424242; color: #BDBDBD; }
+                QLineEdit { background-color: #424242; border: 2px solid #1E88E5; border-radius: 10px; padding: 8px; font-size: 14px; color: white; }
+                QLineEdit:focus { border: 2px solid #1565C0; background-color: #616161; }
+                QListWidget { background-color: #212121; border: 1px solid #424242; border-radius: 10px; color: white; }
+                QLabel { font-family: Arial, sans-serif; font-size: 12pt; color: white; }
+            """)
+            if self.menu_lateral_widget:
+                self.menu_lateral_widget.setStyleSheet("QWidget[nombre_widget='menu_lateral'] { background-color: #212121; border: 1px solid #424242; }")
+            if self.menu_lateral_lista:
+                self.menu_lateral_lista.setStyleSheet("""
+                    QListWidget#lista_menu_lateral {
+                        background-color: #212121;
+                        border: none;
+                        padding-bottom: 50px;
+                        color: white;
+                    }
+                    QListWidget#lista_menu_lateral::item {
+                        color: white;
+                        padding-top: 10px;
+                        padding-bottom: 10px;
+                    }
+                    QListWidget#lista_menu_lateral::item:hover {
+                        background-color: #333333;
+                        border-left: 5px solid #1E88E5;
+                        color: white;
+                    }
+                    QListWidget#lista_menu_lateral::item:selected {
+                        background-color: #212121;
+                        color: white;
+                        border-left: 5px solid #1E88E5;
+                    }
+                """)
+            self.actualizar_estilo_lista_archivos("oscuro")
+            self.boton_modo.setIcon(qta.icon('fa5s.sun', color='yellow'))
+            self.boton_modo.setProperty("modo", "oscuro")
+        else:
+            # Cambiar a modo claro
+            self.setStyleSheet("""
+                QMainWindow { background-color: white; }
+                QWidget { background-color: white; border: 1px solid #cfcfcf; }
+                QPushButton { background-color: #007BFF; color: white; border-radius: 5px; padding: 5px 10px; }
+                QPushButton:hover { background-color: #0056b3; }
+                QPushButton:disabled { background-color: #e6e6e6; color: #a0a0a0; }
+                QLineEdit { background-color: #F5F5F5; border: 2px solid #87CEEB; border-radius: 10px; padding: 8px; font-size: 14px; color: #333; }
+                QLineEdit:focus { border: 2px solid #4682B4; background-color: #FFFFFF; }
+                QListWidget { background-color: #FFFFFF; border: 1px solid #DDDDDD; border-radius: 10px; color: black; }
+                QLabel { font-family: Arial, sans-serif; font-size: 12pt; color: black; }
+            """)
+            if self.menu_lateral_widget:
+                self.menu_lateral_widget.setStyleSheet("QWidget[nombre_widget='menu_lateral'] { background-color: #F7F7F7; border: 1px solid black; }")
+            if self.menu_lateral_lista:
+                self.menu_lateral_lista.setStyleSheet("""
+                    QListWidget#lista_menu_lateral {
+                        background-color: #F7F7F7;
+                        border: none;
+                        padding-bottom: 50px;
+                        color: black;
+                    }
+                    QListWidget#lista_menu_lateral::item {
+                        color: black;
+                        padding-top: 10px;
+                        padding-bottom: 10px;
+                    }
+                    QListWidget#lista_menu_lateral::item:hover {
+                        background-color: #DCDCDC;
+                        border-left: 5px solid #3498db;
+                        color: black;
+                    }
+                    QListWidget#lista_menu_lateral::item:selected {
+                        background-color: #F7F7F7;
+                        color: black;
+                        border-left: 5px solid #3498db;
+                    }
+                """)
+            self.actualizar_estilo_lista_archivos("claro")
+            self.boton_modo.setIcon(qta.icon('fa5s.moon', color='black'))
+            self.boton_modo.setProperty("modo", "claro")
 
+    def actualizar_estilo_lista_archivos(self, modo):
+        """Actualiza los colores de los elementos de la lista de archivos según el modo."""
+        for i in range(self.lista_archivos.count()):
+            item = self.lista_archivos.item(i)
+            if item.text().startswith(">"):  # Es un encabezado de subcarpeta
+                if modo == "oscuro":
+                    item.setForeground(QColor("white"))  # Texto blanco
+                    item.setBackground(QColor("#333333"))  # Fondo gris oscuro
+                else:
+                    item.setForeground(QColor("black"))  # Texto negro
+                    item.setBackground(QColor("#DCDCDC"))  # Fondo gris claro
+            else:  # Es un archivo
+                if modo == "oscuro":
+                    item.setForeground(QColor("white"))  # Texto blanco
+                    item.setBackground(QColor("#212121"))  # Fondo gris oscuro
+                else:
+                    item.setForeground(QColor("black"))  # Texto negro
+                    item.setBackground(QColor("#FFFFFF"))  # Fondo blanco
+
+    def abrir_explorador_archivos(self):
+        # Directorio base para buscar archivos
+        directorio_base = os.path.join(os.path.dirname(__file__), "..", "documentos")
+        if os.path.exists(directorio_base):
+            # Abrir el explorador de archivos en la ruta especificada
+            os.startfile(directorio_base)
+        else:
+            QMessageBox.warning(self, "Error", "El directorio no existe. Por favor, verifica la ruta.")
 
     def buscar_archivos(self):
         # Obtener el texto del campo de búsqueda
@@ -209,7 +350,7 @@ class VentanaPrincipal(QMainWindow):
                     encabezado = QListWidgetItem(f">{subcarpeta}")
                     encabezado.setFlags(Qt.ItemIsEnabled)  # Solo habilitado, para que sea visible pero no seleccionable
                     encabezado.setForeground(QColor("black"))  # Texto en negro para mejor visibilidad
-                    encabezado.setBackground(QColor("#DCDCDC"))  # Fondo gris claro
+                    encabezado.setBackground(QColor("#949494FF"))  # Fondo gris claro
                     self.lista_archivos.addItem(encabezado)
 
                     # Añadir los archivos de la subcarpeta

@@ -7,27 +7,29 @@ def crear_menu_lateral(callback):
     menu_lateral = QWidget()
     layout_menu = QVBoxLayout()
     menu_lateral.setLayout(layout_menu)
-    menu_lateral.setStyleSheet("background-color: #F7F7F7; border:1px solid black;")
+    menu_lateral.setProperty("nombre_widget", "menu_lateral") # Añadimos una propiedad para identificarlo
+    menu_lateral.setStyleSheet("QWidget[nombre_widget='menu_lateral'] { background-color: #F7F7F7; border:1px solid black; }")
     menu_lateral.setFixedWidth(150)  # Ancho fijo del menú lateral
-    
+
     # Añadir elementos al menú
     lista_menu = QListWidget()
+    lista_menu.setObjectName("lista_menu_lateral") # Le damos un nombre de objeto para identificarlo
     lista_menu.setFocusPolicy(Qt.NoFocus)
     lista_menu.setStyleSheet("""
-        QListWidget {
+        QListWidget#lista_menu_lateral {
             background-color: #F7F7F7;
             border: none;
             padding-bottom: 50px;
         }
-        QListWidget:item {
+        QListWidget#lista_menu_lateral::item {
             padding-top: 10px;
             padding-bottom: 10px;
         }
-        QListWidget:item:hover {
+        QListWidget#lista_menu_lateral::item:hover {
             background-color: #DCDCDC;
             border-left: 5px solid #3498db;
         }
-        QListWidget:item:selected {
+        QListWidget#lista_menu_lateral::item:selected {
             background-color: #F7F7F7;
             color: black;
             border-left: 5px solid #3498db;
@@ -49,5 +51,5 @@ def crear_menu_lateral(callback):
     # Conectar eventos de clic al callback proporcionado
     lista_menu.itemClicked.connect(callback)
     layout_menu.addWidget(lista_menu)
-    
-    return menu_lateral
+
+    return menu_lateral, lista_menu # Devolvemos ambos: el widget contenedor y la lista interna
