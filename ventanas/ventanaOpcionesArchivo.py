@@ -10,6 +10,7 @@ from docx import Document
 from PyPDF2 import PdfReader
 from PyQt5.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QListWidget, QLineEdit, QTextEdit, QPushButton, QMessageBox
 from PyQt5.QtWidgets import QApplication
+import spacy
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -250,6 +251,14 @@ class VentanaBusquedaInteligente(QDialog):
         self.file_path = file_path
         self.texto_documento = self.cargar_documento(file_path)
 
+        # Cargar el modelo de spaCy en español
+        try:
+            self.nlp = spacy.load("es_core_news_sm")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"No se pudo cargar el modelo de spaCy:\n{str(e)}")
+            self.close()
+            return
+
         # Layout principal
         layout_principal = QHBoxLayout()
         self.setLayout(layout_principal)
@@ -308,27 +317,27 @@ class VentanaBusquedaInteligente(QDialog):
             return ""
 
     def iniciar_busqueda(self):
-        """Busca direcciones de correo, números de teléfono, CURP, RFC, fechas y años en el texto."""
+        """Usa NLP para detectar entidades (correos, teléfonos, etc.)."""
+        doc = self.nlp(self.texto_documento)
+
+        # Extraer entidades con spaCy
         self.resultados = {
-            # Regex para correos electrónicos
-            "Correos electrónicos": re.findall(r"[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}", self.texto_documento),
-            
-            # Regex para números de teléfono
-            "Números de teléfono": re.findall(r"(\d{2}[- ]?){4}\d{2}", self.texto_documento),
-            
-            # Regex para CURP
-            "CURP": re.findall(r"[A-Z]{4}\d{6}[A-Z]{6}\d{2}", self.texto_documento),
-            
-            # Regex para RFC
-            "RFC": re.findall(r"[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}", self.texto_documento),
-            
-            # Regex para fechas (formato DD/MM/AAAA o DD-MM-AAAA)
-            "Fechas": re.findall(r"\b\d{1,2}[-/]\d{1,2}[-/]\d{4}\b", self.texto_documento),
-            
-            # Regex para años (4 dígitos)
-            "Años": re.findall(r"\b\d{4}\b", self.texto_documento),
+            "Correos electrónicos": [ent.text for ent in doc.ents if ent.label_ == "EMAIL"],
+            "Números de teléfono": [ent.text for ent in doc.ents if ent.label_ == "TELEFONO"],
+            "CURP": [ent.text for ent in doc.ents if ent.label_ == "CURP"],
+            "RFC": [ent.text for ent in doc.ents if ent.label_ == "RFC"],
         }
-        
+
+        # Respaldo con expresiones regulares para entidades no reconocidas por spaCy
+        if not self.resultados["Correos electrónicos"]:
+            self.resultados["Correos electrónicos"] = re.findall(r"[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}", self.texto_documento)
+        if not self.resultados["Números de teléfono"]:
+            self.resultados["Números de teléfono"] = re.findall(r"(\d{2}[- ]?){4}\d{2}", self.texto_documento)
+        if not self.resultados["CURP"]:
+            self.resultados["CURP"] = re.findall(r"[A-Z]{4}\d{6}[A-Z]{6}\d{2}", self.texto_documento)
+        if not self.resultados["RFC"]:
+            self.resultados["RFC"] = re.findall(r"[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}", self.texto_documento)
+
         # Filtrar resultados vacíos
         for categoria in list(self.resultados.keys()):
             if not self.resultados[categoria]:
@@ -350,8 +359,7 @@ class VentanaBusquedaInteligente(QDialog):
             "Números de teléfono": QColor("#B3E5FC"),   # Cyan claro
             "CURP": QColor("#C8E6C9"),                  # Verde claro
             "RFC": QColor("#BBDEFB"),                   # Azul claro
-            "Fechas": QColor("#FFCCBC"),                # Naranja claro
-            "Años": QColor("#D1C4E9"),                  # Morado claro
+            "Personalizado": QColor("orange"),          # Naranja
         }
 
         cursor = self.area_texto.textCursor()
@@ -384,25 +392,28 @@ class VentanaBusquedaInteligente(QDialog):
 
     def buscar_texto_personalizado(self):
         """Busca texto personalizado ingresado por el usuario."""
-        texto = self.barra_busqueda.text()
-        if texto:
-            # Limpiar resaltado anterior
-            cursor = self.area_texto.textCursor()
-            cursor.select(QTextCursor.Document)
-            cursor.setCharFormat(QTextCharFormat())
-            
-            formato = QTextCharFormat()
-            formato.setBackground(QColor("orange"))
-            
-            pos = 0
-            while True:
-                pos = self.texto_documento.find(texto, pos)
-                if pos == -1:
-                    break
-                cursor.setPosition(pos)
-                cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, len(texto))
-                cursor.mergeCharFormat(formato)
-                pos += len(texto)
+        texto = self.barra_busqueda.text().strip()
+        if not texto:
+            QMessageBox.warning(self, "Advertencia", "Por favor, ingresa un texto para buscar.")
+            return
+
+        # Buscar coincidencias del texto personalizado
+        coincidencias = [m.group() for m in re.finditer(re.escape(texto), self.texto_documento, re.IGNORECASE)]
+
+        if coincidencias:
+            # Agregar la categoría "Personalizado" a los resultados
+            self.resultados["Personalizado"] = coincidencias
+
+            # Actualizar la lista de categorías
+            self.lista_categorias.clear()
+            for categoria, resultados in self.resultados.items():
+                if resultados:
+                    self.lista_categorias.addItem(f"{categoria} ({len(resultados)})")
+
+            # Resaltar las coincidencias en el texto
+            self.resaltar_resultados()
+        else:
+            QMessageBox.information(self, "Sin coincidencias", f"No se encontraron coincidencias para '{texto}'.")
 
     def copiar_al_portapapeles(self, texto):
         """Copia el texto seleccionado al portapapeles."""

@@ -3,6 +3,8 @@
 import cv2
 import numpy as np
 import math
+import re
+from PyQt5.QtWidgets import QMessageBox
 
 resolutionOutput =  [720,1080]
 
@@ -90,3 +92,25 @@ def processImageCanny(image, th1=20, th2=200, ro=resolutionOutput, showcanny=Fal
             matrix = cv2.getPerspectiveTransform(pts1, pts2)
             return cv2.warpPerspective(gray, matrix, (width, height))
         return 0
+
+def buscar_texto_personalizado(self):
+    """Busca texto personalizado ingresado por el usuario."""
+    texto = self.barra_busqueda.text().strip()
+    if not texto:
+        QMessageBox.warning(self, "Advertencia", "Por favor, ingresa un texto para buscar.")
+        return
+
+    # Buscar coincidencias del texto personalizado
+    coincidencias = [m.group() for m in re.finditer(re.escape(texto), self.texto_documento, re.IGNORECASE)]
+
+    if coincidencias:
+        # Agregar la categoría "Personalizado" a los resultados
+        self.resultados["Personalizado"] = coincidencias
+
+        # Actualizar la lista de categorías
+        self.lista_categorias.addItem(f"Personalizado ({len(coincidencias)})")
+
+        # Resaltar las coincidencias en el texto
+        self.resaltar_resultados()
+    else:
+        QMessageBox.information(self, "Sin coincidencias", f"No se encontraron coincidencias para '{texto}'.")

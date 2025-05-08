@@ -1,6 +1,6 @@
 import sys
 import os
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFileDialog, QSlider
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QFileDialog, QSlider, QMessageBox
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 import cv2
@@ -11,6 +11,7 @@ from ventanas.ventanaGuardadoArchivo import VentanaGuardadoArchivo
 from app.cameraScanner import cameraScanner
 from datetime import datetime
 import qtawesome as qta
+from ventanas.ventanaVisualizacion import VentanaVisualizacion  # Import the missing class
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ruta_destino = os.path.join('documentos')
@@ -130,6 +131,7 @@ class VentanaEscaneo(QWidget):
         self.boton_scaneo.setEnabled(estado)
         self.boton_seleccionar.setEnabled(not estado)
         print("Entro")
+
     def crear_interfaz(self):
         layout_principal = QVBoxLayout()
         self.setLayout(layout_principal)
@@ -144,11 +146,30 @@ class VentanaEscaneo(QWidget):
         layout_botones = QHBoxLayout()
         layout_principal.addLayout(layout_apartados)
         layout_principal.addLayout(layout_botones)
+
         # Apartado para imágenes
-        layout_apartados.addWidget(self.etiqueta_original)
-        layout_apartados.addWidget(self.etiqueta_escaneada)
-        
-        # Añadir elementos al diseño principal
+        layout_imagen_original = QVBoxLayout()
+        layout_imagen_escaneada = QVBoxLayout()
+
+        # Botón para abrir la imagen en una ventana
+        boton_visualizar_original = QPushButton()
+        boton_visualizar_original.setIcon(qta.icon('fa5s.crosshairs'))
+        boton_visualizar_original.clicked.connect(lambda: self.abrir_visualizacion(self.etiqueta_original.pixmap()))
+
+        boton_visualizar_escaneada = QPushButton()
+        boton_visualizar_escaneada.setIcon(qta.icon('fa5s.crosshairs'))
+        boton_visualizar_escaneada.clicked.connect(lambda: self.abrir_visualizacion(self.etiqueta_escaneada.pixmap()))
+
+        # Añadir etiquetas y botones al diseño
+        layout_imagen_original.addWidget(self.etiqueta_original)
+        layout_imagen_original.addWidget(boton_visualizar_original)
+
+        layout_imagen_escaneada.addWidget(self.etiqueta_escaneada)
+        layout_imagen_escaneada.addWidget(boton_visualizar_escaneada)
+
+        layout_apartados.addLayout(layout_imagen_original)
+        layout_apartados.addLayout(layout_imagen_escaneada)
+
         layout_botones.addWidget(self.boton_seleccionar)
         layout_botones.addWidget(self.boton_scaneo)
         layout_botones.addWidget(self.boton_procesar)
@@ -205,7 +226,7 @@ class VentanaEscaneo(QWidget):
     def seleccionar_imagen(self):
         self.ruta_imagen, _ = QFileDialog.getOpenFileName(self, "Seleccionar Imagen", "", "Imágenes (*.png *.jpg *.jpeg *.bmp)")
         if self.ruta_imagen:
-            print('PRUEBAAAAAA: ', self.ruta_imagen)
+            print('PRUEAAAAA: ', self.ruta_imagen)
             self.boton_procesar.setEnabled(True)
             self.slider_brillo.setEnabled(True)
             self.slider_contraste.setEnabled(True)
@@ -227,33 +248,6 @@ class VentanaEscaneo(QWidget):
                                                                        Qt.KeepAspectRatio))
                 self.boton_procesar.setEnabled(False)  # Deshabilitado al inicio
                 print(f"Error: La imagen procesada no es válida. Valor recibido: {imagen_procesada}")
-
-    # def seleccionar_imagen_camera(self):
-    #     self.ruta_imagen, _ = 
-    #     if self.ruta_imagen:
-    #         print('PRUEBAAAAAA_camera: ', self.ruta_imagen)
-    #         self.boton_procesar.setEnabled(True)
-    #         self.slider_brillo.setEnabled(True)
-    #         self.slider_contraste.setEnabled(True)
-    #         escaner = imageScanner(self.ruta_imagen)
-    #         imagen_original, imagen_procesada = escaner.scan()
-    #         self.imagenProcesada = imagen_procesada
-
-    #         # Validar imágenes antes de procesarlas
-    #         if isinstance(imagen_original, (np.ndarray, cv2.UMat)) and isinstance(imagen_procesada, (np.ndarray, cv2.UMat)):
-    #             self.mostrar_imagen(imagen_original, self.etiqueta_original)
-    #             self.mostrar_imagen(imagen_procesada, self.etiqueta_escaneada)
-    #         else:
-
-    #             self.etiqueta_original.setPixmap(self.imagen_error.scaled(self.etiqueta_original.width(),
-    #                                                                   self.etiqueta_original.height(),
-    #                                                                   Qt.KeepAspectRatio))
-    #             self.etiqueta_escaneada.setPixmap(self.imagen_error.scaled(self.etiqueta_escaneada.width(),
-    #                                                                    self.etiqueta_escaneada.height(),
-    #                                                                    Qt.KeepAspectRatio))
-    #             self.boton_procesar.setEnabled(False)  # Deshabilitado al inicio
-    #             print(f"Error: La imagen procesada no es válida. Valor recibido: {imagen_procesada}")
-
 
     def procesar_imagen(self):
         self.boton_procesar.setEnabled(False)
@@ -277,6 +271,45 @@ class VentanaEscaneo(QWidget):
         pixmap = QPixmap.fromImage(q_image)
 
         label.setPixmap(pixmap.scaled(label.width(), label.height(), Qt.KeepAspectRatio))
+
+    def abrir_visualizacion(self, pixmap):
+        """Abre la ventana de visualización con la imagen seleccionada."""
+        if pixmap is None or pixmap.isNull():
+            QMessageBox.warning(self, "Advertencia", "No hay imagen para visualizar.")
+            return
+
+        # Convertir QPixmap a QImage
+        qimage = pixmap.toImage()
+
+        # Crear y mostrar la ventana de visualización
+        ventana = VentanaVisualizacion(qimage, self)
+        ventana.exec_()
+
+        # Obtener los puntos seleccionados
+        if len(ventana.puntos) == 4:
+            self.procesar_rectangulo(ventana.puntos)
+
+    def procesar_rectangulo(self, puntos):
+        """Procesa el rectángulo seleccionado y extrae el texto."""
+        # Convertir los puntos a coordenadas enteras
+        puntos = [(int(p.x()), int(p.y())) for p in puntos]
+
+        # Recortar la imagen original
+        if self.ruta_imagen:
+            imagen = cv2.imread(self.ruta_imagen)
+            pts = np.array(puntos, dtype="float32")
+            rect = cv2.boundingRect(pts)
+            x, y, w, h = rect
+            recorte = imagen[y:y+h, x:x+w]
+
+            # Procesar el recorte (por ejemplo, extraer texto con OCR)
+            texto = self.extraer_texto(recorte)
+            print("Texto extraído:", texto)
+
+    def extraer_texto(self, imagen):
+        """Extrae texto de una imagen usando OCR."""
+        import pytesseract
+        return pytesseract.image_to_string(imagen, lang="spa")
 
     def abrirCamara():
         camera = cameraScanner(0)
