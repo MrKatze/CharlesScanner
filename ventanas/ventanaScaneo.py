@@ -59,7 +59,6 @@ class VentanaEscaneo(QWidget):
         """)
 
         # Crear interruptor deslizable
-         # Crear interruptor deslizable
         self.interruptor = InterruptorDeslizable()
         self.interruptor.estado_cambiado.connect(self.actualizar_estado_botones)
 
@@ -151,29 +150,27 @@ class VentanaEscaneo(QWidget):
         layout_imagen_original = QVBoxLayout()
         layout_imagen_escaneada = QVBoxLayout()
 
-        # Botón para abrir la imagen en una ventana
-        boton_visualizar_original = QPushButton()
-        boton_visualizar_original.setIcon(qta.icon('fa5s.crosshairs'))
-        boton_visualizar_original.clicked.connect(lambda: self.abrir_visualizacion(self.etiqueta_original.pixmap()))
+        # Botón para abrir la ventana de visualización
+        boton_visualizar = QPushButton("Seleccionar manualmente")
+        boton_visualizar.setIcon(qta.icon('fa5s.crosshairs'))
+        boton_visualizar.clicked.connect(self.abrir_visualizacion)
 
-        boton_visualizar_escaneada = QPushButton()
-        boton_visualizar_escaneada.setIcon(qta.icon('fa5s.crosshairs'))
-        boton_visualizar_escaneada.clicked.connect(lambda: self.abrir_visualizacion(self.etiqueta_escaneada.pixmap()))
-
-        # Añadir etiquetas y botones al diseño
+        # Añadir la etiqueta y el botón al diseño de la imagen original
         layout_imagen_original.addWidget(self.etiqueta_original)
-        layout_imagen_original.addWidget(boton_visualizar_original)
+        layout_imagen_original.addWidget(boton_visualizar)
 
+        # Añadir la etiqueta de la imagen escaneada al diseño
         layout_imagen_escaneada.addWidget(self.etiqueta_escaneada)
-        layout_imagen_escaneada.addWidget(boton_visualizar_escaneada)
 
+        # Añadir los apartados al diseño principal
         layout_apartados.addLayout(layout_imagen_original)
         layout_apartados.addLayout(layout_imagen_escaneada)
 
+        # Añadir botones al diseño principal
         layout_botones.addWidget(self.boton_seleccionar)
         layout_botones.addWidget(self.boton_scaneo)
         layout_botones.addWidget(self.boton_procesar)
-            
+
     def tomar_foto_guardar(self, directorio_destino):
         cam = cv2.VideoCapture(0)
 
@@ -226,7 +223,7 @@ class VentanaEscaneo(QWidget):
     def seleccionar_imagen(self):
         self.ruta_imagen, _ = QFileDialog.getOpenFileName(self, "Seleccionar Imagen", "", "Imágenes (*.png *.jpg *.jpeg *.bmp)")
         if self.ruta_imagen:
-            print('PRUEAAAAA: ', self.ruta_imagen)
+            print('PRUEBAAAAAA: ', self.ruta_imagen)
             self.boton_procesar.setEnabled(True)
             self.slider_brillo.setEnabled(True)
             self.slider_contraste.setEnabled(True)
@@ -272,17 +269,20 @@ class VentanaEscaneo(QWidget):
 
         label.setPixmap(pixmap.scaled(label.width(), label.height(), Qt.KeepAspectRatio))
 
-    def abrir_visualizacion(self, pixmap):
-        """Abre la ventana de visualización con la imagen seleccionada."""
-        if pixmap is None or pixmap.isNull():
-            QMessageBox.warning(self, "Advertencia", "No hay imagen para visualizar.")
+    def abrir_visualizacion(self):
+        """Abre la ventana de visualización para seleccionar manualmente una porción de la imagen."""
+        if not hasattr(self, 'ruta_imagen') or not self.ruta_imagen:
+            QMessageBox.warning(self, "Advertencia", "No hay una imagen cargada para visualizar.")
             return
 
-        # Convertir QPixmap a QImage
-        qimage = pixmap.toImage()
+        # Cargar la imagen original
+        imagen = QImage(self.ruta_imagen)
+        if imagen.isNull():
+            QMessageBox.critical(self, "Error", "No se pudo cargar la imagen.")
+            return
 
         # Crear y mostrar la ventana de visualización
-        ventana = VentanaVisualizacion(qimage, self)
+        ventana = VentanaVisualizacion(imagen, self)
         ventana.exec_()
 
         # Obtener los puntos seleccionados
@@ -294,22 +294,44 @@ class VentanaEscaneo(QWidget):
         # Convertir los puntos a coordenadas enteras
         puntos = [(int(p.x()), int(p.y())) for p in puntos]
 
-        # Recortar la imagen original
-        if self.ruta_imagen:
-            imagen = cv2.imread(self.ruta_imagen)
-            pts = np.array(puntos, dtype="float32")
-            rect = cv2.boundingRect(pts)
-            x, y, w, h = rect
-            recorte = imagen[y:y+h, x:x+w]
+        # Cargar la imagen original
+        imagen = cv2.imread(self.ruta_imagen)
+        if imagen is None:
+            QMessageBox.critical(self, "Error", "No se pudo cargar la imagen original.")
+            return
 
-            # Procesar el recorte (por ejemplo, extraer texto con OCR)
-            texto = self.extraer_texto(recorte)
-            print("Texto extraído:", texto)
+        # Crear un rectángulo a partir de los puntos seleccionados
+        pts = np.array(puntos, dtype="float32")
+        rect = cv2.boundingRect(pts)
+        x, y, w, h = rect
+        recorte = imagen[y:y+h, x:x+w]
+
+        # Mostrar el recorte en la etiqueta de la imagen escaneada
+        self.mostrar_imagen(recorte, self.etiqueta_escaneada)
+
+        # Extraer texto del recorte
+        texto = self.extraer_texto(recorte)
+        print("Texto extraído:", texto)
 
     def extraer_texto(self, imagen):
-        """Extrae texto de una imagen usando OCR."""
-        import pytesseract
-        return pytesseract.image_to_string(imagen, lang="spa")
+        """Extrae texto de una imagen usando EasyOCR."""
+        import easyocr
+
+        # Crear un lector de EasyOCR
+        lector = easyocr.Reader(['es'], gpu=False)  # Idioma español, sin usar GPU
+
+        # Convertir la imagen de OpenCV a RGB si es necesario
+        if len(imagen.shape) == 2:  # Imagen en escala de grises
+            imagen_rgb = cv2.cvtColor(imagen, cv2.COLOR_GRAY2RGB)
+        else:
+            imagen_rgb = cv2.cvtColor(imagen, cv2.COLOR_BGR2RGB)
+
+        # Extraer texto de la imagen
+        resultados = lector.readtext(imagen_rgb)
+
+        # Combinar el texto detectado en una sola cadena
+        texto = " ".join([resultado[1] for resultado in resultados])
+        return texto
 
     def abrirCamara():
         camera = cameraScanner(0)
