@@ -8,7 +8,7 @@ import re
 class VentanaBusquedaInteligente(QDialog):
     def __init__(self, file_path):
         super().__init__()
-        self.setWindowTitle("Búsqueda Inteligente")
+        self.setWindowTitle("Búsqueda en Archivo")
         self.resize(800, 600)
 
         self.file_path = file_path

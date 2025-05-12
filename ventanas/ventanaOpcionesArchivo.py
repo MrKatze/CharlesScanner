@@ -57,7 +57,7 @@ class VentanaOpcionesArchivos(QDialog):
         
         self.setLayout(layout)
     def agregar_botones(self, layout):
-        opciones = ["Subir a Drive Google", "Búsqueda Inteligente", "Exportación a PDF"]
+        opciones = ["Subir a Drive Google", "Búsqueda en Archivo", "Exportación a PDF"]
         iconos = ["fa5s.folder", "fa5s.search", "fa5s.file-pdf"]
         for i, opcion in enumerate(opciones):
             if self.tipo == 0 and opcion == "Exportación a PDF":
@@ -93,7 +93,7 @@ class VentanaOpcionesArchivos(QDialog):
                 )
                 print(f"Error al subir: {e}")
 
-        elif boton_presionado.text() == "Búsqueda Inteligente":
+        elif boton_presionado.text() == "Búsqueda en Archivo":
             file_path = os.path.join(BASE_DIR, 'documentos', self.nombre_archivo)
             ventana_busqueda = VentanaBusquedaInteligente(file_path)
             ventana_busqueda.exec()   
