@@ -1,3 +1,5 @@
+import subprocess
+import platform
 import os
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
@@ -321,14 +323,26 @@ class VentanaPrincipal(QMainWindow):
                     item.setForeground(QColor("black"))  # Texto negro
                     item.setBackground(QColor("#FFFFFF"))  # Fondo blanco
 
+
     def abrir_explorador_archivos(self):
-        # Directorio base para buscar archivos
         directorio_base = os.path.join(os.path.dirname(__file__), "..", "documentos")
+        directorio_base = os.path.abspath(directorio_base)
+
         if os.path.exists(directorio_base):
-            # Abrir el explorador de archivos en la ruta especificada
-            os.startfile(directorio_base)
+            sistema = platform.system()
+
+            try:
+                if sistema == "Windows":
+                    os.startfile(directorio_base)
+                elif sistema == "Darwin":  # macOS
+                    subprocess.Popen(["open", directorio_base])
+                else:  # Linux
+                    subprocess.Popen(["xdg-open", directorio_base])
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo abrir el explorador:\n{str(e)}")
         else:
             QMessageBox.warning(self, "Error", "El directorio no existe. Por favor, verifica la ruta.")
+
 
     def buscar_archivos(self):
         # Obtener el texto del campo de búsqueda

@@ -223,7 +223,7 @@ class VentanaEscaneo(QWidget):
     def seleccionar_imagen(self):
         self.ruta_imagen, _ = QFileDialog.getOpenFileName(self, "Seleccionar Imagen", "", "Imágenes (*.png *.jpg *.jpeg *.bmp)")
         if self.ruta_imagen:
-            print('PRUEBAAAAAA: ', self.ruta_imagen)
+            print('PRUEAAAAA: ', self.ruta_imagen)
             self.boton_procesar.setEnabled(True)
             self.slider_brillo.setEnabled(True)
             self.slider_contraste.setEnabled(True)
@@ -247,10 +247,14 @@ class VentanaEscaneo(QWidget):
                 print(f"Error: La imagen procesada no es válida. Valor recibido: {imagen_procesada}")
 
     def procesar_imagen(self):
-        self.boton_procesar.setEnabled(False)
+        """Inicia la extracción de texto desde la imagen procesada."""
+        if not hasattr(self, 'imagenProcesada') or self.imagenProcesada is None:
+            QMessageBox.warning(self, "Advertencia", "No hay una imagen procesada para extraer texto.")
+            return
+
+        # Abrir la ventana de guardado de archivo
         tarjeta = VentanaGuardadoArchivo(self.imagenProcesada)
         tarjeta.exec_()
-        
 
     def mostrar_imagen(self, image, label):
         """Convierte una imagen de OpenCV a formato Pixmap y la ajusta al QLabel manteniendo la proporción."""
@@ -287,10 +291,14 @@ class VentanaEscaneo(QWidget):
 
         # Obtener los puntos seleccionados
         if len(ventana.puntos) == 4:
+            # Procesar el recorte manual
             self.procesar_rectangulo(ventana.puntos)
+        else:
+            # Si no se seleccionó un área manualmente, usar el flujo automático
+            self.procesar_imagen_automaticamente()
 
     def procesar_rectangulo(self, puntos):
-        """Procesa el rectángulo seleccionado y extrae el texto."""
+        """Procesa el rectángulo seleccionado y almacena la imagen recortada."""
         # Convertir los puntos a coordenadas enteras
         puntos = [(int(p.x()), int(p.y())) for p in puntos]
 
@@ -306,12 +314,14 @@ class VentanaEscaneo(QWidget):
         x, y, w, h = rect
         recorte = imagen[y:y+h, x:x+w]
 
+        # Almacenar la imagen recortada
+        self.imagenProcesada = recorte
+
         # Mostrar el recorte en la etiqueta de la imagen escaneada
         self.mostrar_imagen(recorte, self.etiqueta_escaneada)
 
-        # Extraer texto del recorte
-        texto = self.extraer_texto(recorte)
-        print("Texto extraído:", texto)
+        # Habilitar el botón de procesar imagen
+        self.boton_procesar.setEnabled(True)
 
     def extraer_texto(self, imagen):
         """Extrae texto de una imagen usando EasyOCR."""
@@ -332,6 +342,27 @@ class VentanaEscaneo(QWidget):
         # Combinar el texto detectado en una sola cadena
         texto = " ".join([resultado[1] for resultado in resultados])
         return texto
+
+    def procesar_imagen_automaticamente(self):
+        """Procesa la imagen automáticamente si no se selecciona un área manualmente."""
+        escaner = imageScanner(self.ruta_imagen)
+        imagen_original, imagen_procesada = escaner.scan()
+        self.imagenProcesada = imagen_procesada
+
+        # Validar imágenes antes de procesarlas
+        if isinstance(imagen_original, (np.ndarray, cv2.UMat)) and isinstance(imagen_procesada, (np.ndarray, cv2.UMat)):
+            self.mostrar_imagen(imagen_original, self.etiqueta_original)
+            self.mostrar_imagen(imagen_procesada, self.etiqueta_escaneada)
+            self.boton_procesar.setEnabled(True)  # Habilitar el botón de procesar imagen
+        else:
+            self.etiqueta_original.setPixmap(self.imagen_error.scaled(self.etiqueta_original.width(),
+                                                                      self.etiqueta_original.height(),
+                                                                      Qt.KeepAspectRatio))
+            self.etiqueta_escaneada.setPixmap(self.imagen_error.scaled(self.etiqueta_escaneada.width(),
+                                                                       self.etiqueta_escaneada.height(),
+                                                                       Qt.KeepAspectRatio))
+            self.boton_procesar.setEnabled(False)  # Deshabilitado al inicio
+            print(f"Error: La imagen procesada no es válida. Valor recibido: {imagen_procesada}")
 
     def abrirCamara():
         camera = cameraScanner(0)

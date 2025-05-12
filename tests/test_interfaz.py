@@ -1,4 +1,5 @@
-import pytest
+# -*- coding: utf-8 -*-
+# Test suite for the GUI components of the application
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt
 from ventanas.ventanaConfiguracion import VentanaConfiguracion
